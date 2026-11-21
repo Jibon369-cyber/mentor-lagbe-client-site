@@ -18,7 +18,7 @@ export default function PostTuitionPage() {
   async function handleSubmit(data: TuitionFormData) {
     try {
       await api("/tutor/tuitions", { method: "POST", body: data });
-      toast.success("Tuition posted! Waiting for admin approval.");
+      toast.success("Tuition posted successfully!");
       router.push("/dashboard/tutor/my-tuitions");
     } catch (error) {
       // e.g. free plan limit reached

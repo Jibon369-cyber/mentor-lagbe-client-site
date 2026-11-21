@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -26,6 +27,7 @@ import {
 import Container from "@/components/Container";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -79,6 +81,7 @@ export default function Navbar() {
         {/* Desktop right side */}
         <div className='hidden items-center gap-2 md:flex'>
           <ThemeToggle />
+          <NotificationBell />
           {loading ? (
             <div className='h-9 w-28 animate-pulse rounded-md bg-muted' />
           ) : user ? (
@@ -98,10 +101,12 @@ export default function Navbar() {
                 </Badge>
               </DropdownMenuTrigger>
               <DropdownMenuContent align='end' className='w-56'>
-                <DropdownMenuLabel className='truncate'>
-                  {user.email}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className='truncate'>
+                    {user.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                </DropdownMenuGroup>
                 <DropdownMenuItem render={<Link href='/dashboard' />}>
                   <LayoutDashboard className='mr-2 h-4 w-4' /> Dashboard
                 </DropdownMenuItem>

@@ -25,12 +25,14 @@ import StatusBadge from "@/components/StatusBadge";
 import TuitionForm, { type TuitionFormData } from "@/components/TuitionForm";
 import Loader from "@/components/Loader";
 import { useFetch } from "@/hooks/useFetch";
+import { useScrollToHash } from "@/hooks/useScrollToHash";
 import { api, errorMessage } from "@/lib/api";
 import type { Tuition } from "@/lib/types";
 
 export default function MyTuitionsPage() {
   const { data, loading, error, reload } =
     useFetch<Tuition[]>("/tutor/tuitions");
+  useScrollToHash(!loading && !error);
   const [editing, setEditing] = useState<Tuition | null>(null);
 
   async function handleUpdate(form: TuitionFormData) {
@@ -117,7 +119,7 @@ export default function MyTuitionsPage() {
               </TableHeader>
               <TableBody>
                 {data?.map((tuition) => (
-                  <TableRow key={tuition._id}>
+                  <TableRow key={tuition._id} id={`tuition-${tuition._id}`}>
                     <TableCell>
                       <div className='flex items-center gap-3'>
                         {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -18,6 +18,7 @@ import StatusBadge from "@/components/StatusBadge";
 import Loader from "@/components/Loader";
 import ReviewDialog from "@/components/ReviewDialog";
 import { useFetch } from "@/hooks/useFetch";
+import { useScrollToHash } from "@/hooks/useScrollToHash";
 import { api, errorMessage } from "@/lib/api";
 import type { Application } from "@/lib/types";
 
@@ -25,6 +26,7 @@ export default function MyApplicationsPage() {
   const { data, loading, error, reload } = useFetch<Application[]>(
     "/student/applications",
   );
+  useScrollToHash(!loading && !error);
 
   async function handleCancel(id: string) {
     if (!window.confirm("Cancel this application?")) return;
@@ -81,7 +83,7 @@ export default function MyApplicationsPage() {
               </TableHeader>
               <TableBody>
                 {data?.map((app) => (
-                  <TableRow key={app._id}>
+                  <TableRow key={app._id} id={`application-${app._id}`}>
                     <TableCell className='font-medium'>
                       <Link
                         href={`/tuitions/${app.tuitionId}`}

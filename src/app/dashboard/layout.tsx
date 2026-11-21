@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Bell,
   Bookmark,
   ClipboardCheck,
   CreditCard,
@@ -28,6 +29,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import Loader from "@/components/Loader";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/lib/types";
@@ -37,6 +39,7 @@ type NavItem = { href: string; label: string; icon: LucideIcon };
 const menu: Record<Role, NavItem[]> = {
   student: [
     { href: "/dashboard/student", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
     {
       href: "/dashboard/student/my-applications",
       label: "My Applications",
@@ -50,6 +53,7 @@ const menu: Record<Role, NavItem[]> = {
   ],
   tutor: [
     { href: "/dashboard/tutor", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
     {
       href: "/dashboard/tutor/post-tuition",
       label: "Post a Tuition",
@@ -69,6 +73,11 @@ const menu: Record<Role, NavItem[]> = {
       href: "/dashboard/admin/tuitions",
       label: "Tuition Approval",
       icon: ClipboardCheck,
+    },
+    {
+      href: "/dashboard/admin/notifications",
+      label: "Notifications",
+      icon: Bell,
     },
     {
       href: "/dashboard/admin/transactions",
@@ -253,6 +262,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <Sparkles className='mr-1.5 h-3.5 w-3.5' /> Upgrade
               </Link>
             )}
+            <NotificationBell />
             <ThemeToggle />
             <Link
               href='/dashboard/profile'

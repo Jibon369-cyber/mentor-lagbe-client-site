@@ -27,6 +27,7 @@ import PageTitle from "@/components/PageTitle";
 import Loader from "@/components/Loader";
 import { useAuth } from "@/context/AuthContext";
 import { useFetch } from "@/hooks/useFetch";
+import { useScrollToHash } from "@/hooks/useScrollToHash";
 import { api, errorMessage } from "@/lib/api";
 import type { User } from "@/lib/types";
 
@@ -43,6 +44,7 @@ export default function AdminUsersPage() {
   const { data, loading, error, reload } = useFetch<User[]>(
     `/admin/users?${query.toString()}`,
   );
+  useScrollToHash(!loading && !error);
 
   async function changeRole(id: string, role: string) {
     try {
@@ -114,7 +116,7 @@ export default function AdminUsersPage() {
               </TableHeader>
               <TableBody>
                 {data?.map((user) => (
-                  <TableRow key={user._id}>
+                  <TableRow key={user._id} id={`user-${user._id}`}>
                     <TableCell>
                       <div className='flex items-center gap-2'>
                         <Avatar className='h-8 w-8'>

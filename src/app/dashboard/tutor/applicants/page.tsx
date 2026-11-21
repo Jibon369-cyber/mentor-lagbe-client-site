@@ -17,6 +17,7 @@ import PageTitle from "@/components/PageTitle";
 import StatusBadge from "@/components/StatusBadge";
 import Loader from "@/components/Loader";
 import { useFetch } from "@/hooks/useFetch";
+import { useScrollToHash } from "@/hooks/useScrollToHash";
 import { api, errorMessage } from "@/lib/api";
 import type { Application } from "@/lib/types";
 
@@ -26,6 +27,7 @@ export default function ApplicantsPage() {
   const { data, loading, error, reload } = useFetch<Application[]>(
     "/tutor/applications",
   );
+  useScrollToHash(!loading && !error);
   const [filter, setFilter] = useState<Filter>("all");
 
   async function updateStatus(id: string, status: "accepted" | "rejected") {
@@ -100,7 +102,7 @@ export default function ApplicantsPage() {
               </TableHeader>
               <TableBody>
                 {filtered?.map((app) => (
-                  <TableRow key={app._id}>
+                  <TableRow key={app._id} id={`application-${app._id}`}>
                     <TableCell>
                       <p className='font-medium'>{app.studentName}</p>
                       <p className='text-xs text-muted-foreground'>
