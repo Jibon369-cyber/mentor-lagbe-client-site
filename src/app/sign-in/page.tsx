@@ -1,88 +1,93 @@
-
 "use client";
 
-import { useState, type FormEvent } from "react";
 import Link from "next/link";
-
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignInPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    console.log("Sign In Data:", formData);
+    if (!email.trim() || !password) {
+      toast.error("Email and password are required");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
 
-    // Add your login API here
-  };
+    setLoading(true);
+    const { error } = await authClient.signIn.email({ email, password });
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message || "Invalid email or password");
+      return;
+    }
+
+    toast.success("Signed in successfully!");
+    router.push("/dashboard");
+  }
 
   return (
-    <div className='flex min-h-screen items-center justify-center p-4'>
-      <div className='w-full max-w-md space-y-6 rounded-xl border p-8 shadow-sm'>
-        <div className='text-center'>
-          <h1 className='text-3xl font-bold'>Welcome Back</h1>
-          <p className='mt-2 text-sm text-muted-foreground'>
-            Enter your credentials to sign in.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='email'>Email</Label>
-            <Input
-              id='email'
-              type='email'
-              placeholder='example@gmail.com'
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              required
-            />
-          </div>
-
-          <div className='space-y-2'>
-            <Label htmlFor='password'>Password</Label>
-            <Input
-              id='password'
-              type='password'
-              placeholder='Enter your password'
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required
-            />
-          </div>
-
-          <div className='text-right'>
+    <div className='flex min-h-[80vh] items-center justify-center px-4 py-10'>
+      <Card className='w-full max-w-md'>
+        <CardHeader className='text-center'>
+          <CardTitle className='text-2xl'>Welcome back</CardTitle>
+          <CardDescription>Sign in to your MentorLagbe account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className='space-y-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='email'>Email</Label>
+              <Input
+                id='email'
+                type='email'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='password'>Password</Label>
+              <Input
+                id='password'
+                type='password'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <Button type='submit' className='w-full' disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+          <p className='mt-4 text-center text-sm text-muted-foreground'>
+            New here?{" "}
             <Link
-              href='/forgot-password'
-              className='text-sm text-primary hover:underline'>
-              Forgot Password?
+              href='/sign-up'
+              className='font-medium text-primary hover:underline'>
+              Create an account
             </Link>
-          </div>
-
-          <Button type='submit' className='w-full'>
-            Sign In
-          </Button>
-        </form>
-
-        <p className='text-center text-sm text-muted-foreground'>
-          Dont have an account?{" "}
-          <Link
-            href='/sign-up'
-            className='font-semibold text-primary hover:underline'>
-            Sign Up
-          </Link>
-        </p>
-      </div>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
