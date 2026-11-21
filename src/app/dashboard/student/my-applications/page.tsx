@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -14,6 +16,7 @@ import {
 import PageTitle from "@/components/PageTitle";
 import StatusBadge from "@/components/StatusBadge";
 import Loader from "@/components/Loader";
+import ReviewDialog from "@/components/ReviewDialog";
 import { useFetch } from "@/hooks/useFetch";
 import { api, errorMessage } from "@/lib/api";
 import type { Application } from "@/lib/types";
@@ -41,16 +44,30 @@ export default function MyApplicationsPage() {
     <>
       <PageTitle
         title='My Applications'
-        description='All tuitions you have applied for.'
+        description='Track every application and review your accepted tuitions.'
+        action={
+          <Link
+            href='/tuitions'
+            className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Find more tuitions
+          </Link>
+        }
       />
       <Card>
-        <CardContent>
+        <CardContent className='overflow-x-auto'>
           {data?.length === 0 ? (
-            <p className='py-6 text-center text-muted-foreground'>
-              You have not applied for any tuition yet.
-            </p>
+            <div className='py-10 text-center'>
+              <p className='text-muted-foreground'>
+                You have not applied for any tuition yet.
+              </p>
+              <Link
+                href='/tuitions'
+                className={buttonVariants({ className: "mt-4" })}>
+                Browse Tuitions
+              </Link>
+            </div>
           ) : (
-            <Table>
+            <Table className='min-w-[900px]'>
               <TableHeader>
                 <TableRow>
                   <TableHead>Tuition</TableHead>
@@ -58,6 +75,7 @@ export default function MyApplicationsPage() {
                   <TableHead>Monthly Fee</TableHead>
                   <TableHead>Applied</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Review</TableHead>
                   <TableHead className='text-right'>Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -65,7 +83,14 @@ export default function MyApplicationsPage() {
                 {data?.map((app) => (
                   <TableRow key={app._id}>
                     <TableCell className='font-medium'>
-                      {app.tuitionTitle}
+                      <Link
+                        href={`/tuitions/${app.tuitionId}`}
+                        className='hover:text-primary hover:underline'>
+                        {app.tuitionTitle}
+                      </Link>
+                      <p className='text-xs font-normal text-muted-foreground'>
+                        {app.subject}
+                      </p>
                     </TableCell>
                     <TableCell>
                       <p>{app.tutorName}</p>
@@ -73,12 +98,34 @@ export default function MyApplicationsPage() {
                         {app.tutorEmail}
                       </p>
                     </TableCell>
-                    <TableCell>৳{app.monthlyFee}</TableCell>
+                    <TableCell>
+                      ৳{app.monthlyFee.toLocaleString("en-US")}
+                    </TableCell>
                     <TableCell>
                       {new Date(app.appliedAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={app.status} />
+                    </TableCell>
+                    <TableCell>
+                      {app.status === "accepted" ? (
+                        <ReviewDialog
+                          applicationId={app._id}
+                          tuitionTitle={app.tuitionTitle}
+                          initialRating={app.rating}
+                          initialFeedback={app.feedback}
+                          onSubmitted={reload}
+                        />
+                      ) : app.rating ? (
+                        <span className='flex items-center gap-1 text-sm'>
+                          <Star className='h-4 w-4 fill-amber-400 text-amber-400' />
+                          {app.rating}/5
+                        </span>
+                      ) : (
+                        <span className='text-xs text-muted-foreground'>
+                          After acceptance
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className='text-right'>
                       {app.status === "pending" && (

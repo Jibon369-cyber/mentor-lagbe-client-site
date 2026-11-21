@@ -119,7 +119,7 @@ export default function TuitionForm({ initial, submitLabel, onSubmit }: Props) {
           <Label>Subject</Label>
           <Select
             value={form.subject}
-            onValueChange={(v) => setField("subject", v)}>
+            onValueChange={(v) => setField("subject", v ?? "")}>
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='Select subject' />
             </SelectTrigger>
@@ -136,7 +136,7 @@ export default function TuitionForm({ initial, submitLabel, onSubmit }: Props) {
           <Label>Class Level</Label>
           <Select
             value={form.classLevel}
-            onValueChange={(v) => setField("classLevel", v)}>
+            onValueChange={(v) => setField("classLevel", v ?? "")}>
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='Select level' />
             </SelectTrigger>
@@ -151,7 +151,9 @@ export default function TuitionForm({ initial, submitLabel, onSubmit }: Props) {
         </div>
         <div className='space-y-2'>
           <Label>Mode</Label>
-          <Select value={form.mode} onValueChange={(v) => setField("mode", v)}>
+          <Select
+            value={form.mode}
+            onValueChange={(v) => setField("mode", v ?? "")}>
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='Select mode' />
             </SelectTrigger>

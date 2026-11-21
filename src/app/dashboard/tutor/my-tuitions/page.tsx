@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -38,7 +40,7 @@ export default function MyTuitionsPage() {
         method: "PATCH",
         body: form,
       });
-      toast.success("Tuition updated");
+      toast.success("Tuition updated. It will be reviewed again by an admin.");
       setEditing(null);
       reload();
     } catch (err) {
@@ -49,7 +51,7 @@ export default function MyTuitionsPage() {
   async function handleToggle(id: string) {
     try {
       await api(`/tutor/tuitions/${id}/toggle`, { method: "PATCH" });
-      toast.success("Status changed");
+      toast.success("Tuition status changed");
       reload();
     } catch (err) {
       toast.error(errorMessage(err));
@@ -80,18 +82,32 @@ export default function MyTuitionsPage() {
       <PageTitle
         title='My Tuitions'
         description='Edit, close or delete the tuitions you posted.'
+        action={
+          <Link
+            href='/dashboard/tutor/post-tuition'
+            className={buttonVariants({ size: "sm" })}>
+            <Plus className='mr-1.5 h-3.5 w-3.5' /> New Tuition
+          </Link>
+        }
       />
       <Card>
-        <CardContent>
+        <CardContent className='overflow-x-auto'>
           {data?.length === 0 ? (
-            <p className='py-6 text-center text-muted-foreground'>
-              You have not posted any tuition yet.
-            </p>
+            <div className='py-10 text-center'>
+              <p className='text-muted-foreground'>
+                You have not posted any tuition yet.
+              </p>
+              <Link
+                href='/dashboard/tutor/post-tuition'
+                className={buttonVariants({ className: "mt-4" })}>
+                Post your first tuition
+              </Link>
+            </div>
           ) : (
-            <Table>
+            <Table className='min-w-[850px]'>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
+                  <TableHead>Tuition</TableHead>
                   <TableHead>Subject</TableHead>
                   <TableHead>Fee</TableHead>
                   <TableHead>Approval</TableHead>
@@ -102,11 +118,23 @@ export default function MyTuitionsPage() {
               <TableBody>
                 {data?.map((tuition) => (
                   <TableRow key={tuition._id}>
-                    <TableCell className='font-medium'>
-                      {tuition.title}
+                    <TableCell>
+                      <div className='flex items-center gap-3'>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={tuition.bannerImage}
+                          alt=''
+                          className='h-10 w-14 rounded object-cover'
+                        />
+                        <span className='max-w-56 truncate font-medium'>
+                          {tuition.title}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>{tuition.subject}</TableCell>
-                    <TableCell>৳{tuition.monthlyFee}</TableCell>
+                    <TableCell>
+                      ৳{tuition.monthlyFee.toLocaleString("en-US")}
+                    </TableCell>
                     <TableCell>
                       <StatusBadge status={tuition.approvalStatus} />
                     </TableCell>

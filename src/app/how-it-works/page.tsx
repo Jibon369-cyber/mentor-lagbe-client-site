@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import Container from "@/components/Container";
 import HowItWorks from "@/components/HowItWorks";
 
@@ -16,9 +16,11 @@ export default function HowItWorksPage() {
               then apply with your preferred schedule. Track every application
               from your dashboard.
             </p>
-            <Button asChild className='mt-4'>
-              <Link href='/tuitions'>Browse Tuitions</Link>
-            </Button>
+            <Link
+              href='/tuitions'
+              className={buttonVariants({ className: 'mt-4' })}>
+              Browse Tuitions
+            </Link>
           </div>
           <div className='rounded-xl border bg-card p-6'>
             <h3 className='text-xl font-semibold'>For Tutors</h3>
@@ -26,9 +28,11 @@ export default function HowItWorksPage() {
               Post your batch with a banner image. After admin approval it
               appears on the site, and you can accept or reject applicants.
             </p>
-            <Button asChild className='mt-4'>
-              <Link href='/sign-up'>Join as Tutor</Link>
-            </Button>
+            <Link
+              href='/sign-up'
+              className={buttonVariants({ className: 'mt-4' })}>
+              Join as Tutor
+            </Link>
           </div>
         </Container>
       </section>

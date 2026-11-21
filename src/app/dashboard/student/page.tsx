@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Clock, Crown, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  Bookmark,
+  CheckCircle2,
+  Clock,
+  Crown,
+  FileText,
+  Search,
+} from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import PageTitle from "@/components/PageTitle";
 import StatCard from "@/components/StatCard";
 import Loader from "@/components/Loader";
@@ -13,6 +21,7 @@ type Stats = {
   accepted: number;
   pending: number;
   plan: string;
+  savedCount: number;
 };
 
 export default function StudentOverviewPage() {
@@ -25,9 +34,9 @@ export default function StudentOverviewPage() {
     <>
       <PageTitle
         title='Student Overview'
-        description='A quick look at your applications.'
+        description='A quick look at your applications and saved tuitions.'
       />
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-5'>
         <StatCard
           title='Total Applied Tuitions'
           value={data.totalApplied}
@@ -43,13 +52,50 @@ export default function StudentOverviewPage() {
           value={data.pending}
           icon={Clock}
         />
+        <StatCard title='Saved Tuitions' value={data.savedCount} icon={Bookmark} />
         <StatCard title='Current Plan' value={data.plan} icon={Crown} />
       </div>
-      {data.plan === "free" && (
-        <Button asChild className='mt-6'>
-          <Link href='/pricing'>Upgrade to Pro</Link>
-        </Button>
-      )}
+
+      <div className='mt-6 grid gap-4 md:grid-cols-2'>
+        <Card>
+          <CardContent className='flex flex-col justify-between gap-4 sm:flex-row sm:items-center'>
+            <div>
+              <p className='font-semibold'>Find your next batch</p>
+              <p className='text-sm text-muted-foreground'>
+                Browse admin-approved tuitions by subject, level and mode.
+              </p>
+            </div>
+            <Link
+              href='/tuitions'
+              className={buttonVariants({ size: "sm", className: "shrink-0" })}>
+              <Search className='mr-1.5 h-3.5 w-3.5' /> Browse
+            </Link>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className='flex flex-col justify-between gap-4 sm:flex-row sm:items-center'>
+            <div>
+              <p className='font-semibold'>
+                {data.plan === "pro" ? "Pro plan active" : "Upgrade to Pro"}
+              </p>
+              <p className='text-sm text-muted-foreground'>
+                {data.plan === "pro"
+                  ? "You have priority booking and priority support."
+                  : "Get priority booking for just $10 one-time."}
+              </p>
+            </div>
+            {data.plan === "free" ? (
+              <Link
+                href='/pricing'
+                className={buttonVariants({ size: "sm", className: "shrink-0" })}>
+                Upgrade
+              </Link>
+            ) : (
+              <Crown className='h-8 w-8 text-amber-500' />
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </>
   );
 }

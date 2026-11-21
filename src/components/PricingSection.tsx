@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -26,28 +26,52 @@ type PlanProps = {
   features: string[];
   pro?: boolean;
   busy?: boolean;
+  current?: boolean;
+  disabled?: boolean;
   onSubscribe?: () => void;
 };
 
-function Plan({ name, price, features, pro, busy, onSubscribe }: PlanProps) {
+function Plan({
+  name,
+  price,
+  features,
+  pro,
+  busy,
+  current,
+  disabled,
+  onSubscribe,
+}: PlanProps) {
   return (
     <Card
-      className={`flex h-full flex-col ${pro ? "border-primary shadow-md" : ""}`}>
+      className={`relative flex h-full flex-col ${
+        pro ? "border-primary/50 shadow-lg ring-1 ring-primary/10" : ""
+      }`}>
+      {pro && (
+        <div className='absolute -top-3 left-1/2 -translate-x-1/2'>
+          <Badge className='gap-1 shadow-sm'>
+            <Sparkles className='h-3 w-3' /> Most popular
+          </Badge>
+        </div>
+      )}
       <CardHeader>
         <CardTitle className='flex items-center justify-between'>
           {name}
-          {pro && <Badge>Popular</Badge>}
+          {current && <Badge variant='secondary'>Current plan</Badge>}
         </CardTitle>
         <CardDescription>
-          <span className='text-3xl font-bold text-foreground'>{price}</span>
-          {pro && " one-time"}
+          <span className='text-4xl font-bold text-foreground'>{price}</span>
+          {pro && (
+            <span className='text-sm text-muted-foreground'> one-time</span>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className='flex-1'>
-        <ul className='space-y-2 text-sm'>
+        <ul className='space-y-2.5 text-sm'>
           {features.map((feature) => (
             <li key={feature} className='flex items-start gap-2'>
-              <Check className='mt-0.5 h-4 w-4 shrink-0 text-primary' />
+              <span className='mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-primary/10 text-primary'>
+                <Check className='h-3 w-3' />
+              </span>
               {feature}
             </li>
           ))}
@@ -55,13 +79,27 @@ function Plan({ name, price, features, pro, busy, onSubscribe }: PlanProps) {
       </CardContent>
       <CardFooter>
         {pro ? (
-          <Button className='w-full' onClick={onSubscribe} disabled={busy}>
-            {busy ? "Redirecting..." : "Subscribe with Stripe"}
+          <Button
+            className='w-full'
+            onClick={onSubscribe}
+            disabled={busy || current || disabled}>
+            {busy
+              ? "Redirecting to Stripe..."
+              : current
+                ? "You are Pro"
+                : disabled
+                  ? "Admins do not need a plan"
+                  : "Subscribe with Stripe"}
           </Button>
         ) : (
-          <Button variant='outline' className='w-full' asChild>
-            <Link href='/sign-up'>Get Started Free</Link>
-          </Button>
+          <Link
+            href='/sign-up'
+            className={buttonVariants({
+              variant: "outline",
+              className: "w-full",
+            })}>
+            Get Started Free
+          </Link>
         )}
       </CardFooter>
     </Card>
@@ -102,24 +140,29 @@ export default function PricingSection() {
   }
 
   return (
-    <section className='bg-muted/40 py-16'>
+    <section className='bg-muted/30 py-16 md:py-20'>
       <Container>
         <SectionHeading
-          title='Simple Pricing'
-          subtitle='Start for free. Upgrade to Pro when you need more.'
+          title='Simple, transparent pricing'
+          subtitle='Start for free. Upgrade to Pro when you need more reach, priority and support.'
         />
 
-        <div className='grid gap-8 lg:grid-cols-2'>
+        <div className='grid gap-10 lg:grid-cols-2'>
           <div>
-            <h3 className='mb-4 text-lg font-semibold'>For Tutors</h3>
+            <div className='mb-4 flex items-center justify-between'>
+              <h3 className='text-lg font-semibold'>For Tutors</h3>
+              <Badge variant='outline'>Unlimited reach with Pro</Badge>
+            </div>
             <div className='grid gap-4 sm:grid-cols-2'>
               <Plan
                 name='Free Tutor'
                 price='$0'
+                current={user?.role === "tutor" && user?.plan === "free"}
                 features={[
                   "Post up to 2 tuitions",
                   "Manage applicants",
-                  "Basic profile",
+                  "Basic public profile",
+                  "Email support",
                 ]}
               />
               <Plan
@@ -127,11 +170,13 @@ export default function PricingSection() {
                 price='$15'
                 pro
                 busy={busyRole === "tutor"}
+                current={user?.role === "tutor" && user?.plan === "pro"}
+                disabled={user?.role === "admin"}
                 onSubscribe={() => subscribe("tutor")}
                 features={[
                   "Unlimited tuition posts",
-                  "Verified badge",
-                  "Manage applicants",
+                  "Verified Pro badge",
+                  "Manage unlimited applicants",
                   "Priority support",
                 ]}
               />
@@ -139,15 +184,20 @@ export default function PricingSection() {
           </div>
 
           <div>
-            <h3 className='mb-4 text-lg font-semibold'>For Students</h3>
+            <div className='mb-4 flex items-center justify-between'>
+              <h3 className='text-lg font-semibold'>For Students</h3>
+              <Badge variant='outline'>Priority booking</Badge>
+            </div>
             <div className='grid gap-4 sm:grid-cols-2'>
               <Plan
                 name='Free Student'
                 price='$0'
+                current={user?.role === "student" && user?.plan === "free"}
                 features={[
                   "Browse all tuitions",
                   "Apply for tuitions",
                   "Track applications",
+                  "Save tuitions for later",
                 ]}
               />
               <Plan
@@ -155,17 +205,24 @@ export default function PricingSection() {
                 price='$10'
                 pro
                 busy={busyRole === "student"}
+                current={user?.role === "student" && user?.plan === "pro"}
+                disabled={user?.role === "admin"}
                 onSubscribe={() => subscribe("student")}
                 features={[
                   "Priority booking",
-                  "Browse all tuitions",
-                  "Track applications",
+                  "Unlimited applications",
+                  "Early access to new batches",
                   "Priority support",
                 ]}
               />
             </div>
           </div>
         </div>
+
+        <p className='mt-8 flex items-center justify-center gap-2 text-center text-sm text-muted-foreground'>
+          <ShieldCheck className='h-4 w-4 text-emerald-500' />
+          Secure one-time checkout powered by Stripe. No hidden fees.
+        </p>
       </Container>
     </section>
   );

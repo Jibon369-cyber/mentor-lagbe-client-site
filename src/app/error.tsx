@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
@@ -14,9 +14,9 @@ export default function Error({ reset }: { error: Error; reset: () => void }) {
         <Button variant='outline' onClick={reset}>
           Try Again
         </Button>
-        <Button asChild>
-          <Link href='/'>Back to Home</Link>
-        </Button>
+        <Link href='/' className={buttonVariants()}>
+          Back to Home
+        </Link>
       </div>
     </div>
   );

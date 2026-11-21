@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { toast } from "sonner";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -18,10 +20,13 @@ import { useFetch } from "@/hooks/useFetch";
 import { api, errorMessage } from "@/lib/api";
 import type { Application } from "@/lib/types";
 
+type Filter = "all" | "pending" | "accepted" | "rejected";
+
 export default function ApplicantsPage() {
   const { data, loading, error, reload } = useFetch<Application[]>(
     "/tutor/applications",
   );
+  const [filter, setFilter] = useState<Filter>("all");
 
   async function updateStatus(id: string, status: "accepted" | "rejected") {
     try {
@@ -39,20 +44,48 @@ export default function ApplicantsPage() {
   if (loading) return <Loader />;
   if (error) return <p className='text-red-600'>{error}</p>;
 
+  const filtered =
+    filter === "all"
+      ? data
+      : data?.filter((application) => application.status === filter);
+
+  const counts = {
+    all: data?.length ?? 0,
+    pending: data?.filter((a) => a.status === "pending").length ?? 0,
+    accepted: data?.filter((a) => a.status === "accepted").length ?? 0,
+    rejected: data?.filter((a) => a.status === "rejected").length ?? 0,
+  };
+
   return (
     <>
       <PageTitle
         title='Applicants'
-        description='Students who applied to your tuitions.'
+        description='Students who applied to your tuitions. Accept the best fit.'
       />
+
+      <div className='mb-4 flex flex-wrap gap-2'>
+        {(["all", "pending", "accepted", "rejected"] as Filter[]).map(
+          (item) => (
+            <Button
+              key={item}
+              size='sm'
+              variant={filter === item ? "default" : "outline"}
+              onClick={() => setFilter(item)}
+              className='capitalize'>
+              {item} ({counts[item]})
+            </Button>
+          ),
+        )}
+      </div>
+
       <Card>
-        <CardContent>
-          {data?.length === 0 ? (
-            <p className='py-6 text-center text-muted-foreground'>
-              No applications received yet.
+        <CardContent className='overflow-x-auto'>
+          {filtered?.length === 0 ? (
+            <p className='py-10 text-center text-muted-foreground'>
+              No {filter === "all" ? "" : filter} applications found.
             </p>
           ) : (
-            <Table>
+            <Table className='min-w-[1050px]'>
               <TableHeader>
                 <TableRow>
                   <TableHead>Student</TableHead>
@@ -60,12 +93,13 @@ export default function ApplicantsPage() {
                   <TableHead>Tuition</TableHead>
                   <TableHead>Schedule</TableHead>
                   <TableHead>Note</TableHead>
+                  <TableHead>Review</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data?.map((app) => (
+                {filtered?.map((app) => (
                   <TableRow key={app._id}>
                     <TableCell>
                       <p className='font-medium'>{app.studentName}</p>
@@ -80,6 +114,16 @@ export default function ApplicantsPage() {
                       className='max-w-48 truncate'
                       title={app.studentNote}>
                       {app.studentNote || "-"}
+                    </TableCell>
+                    <TableCell>
+                      {app.rating ? (
+                        <span className='flex items-center gap-1 text-sm'>
+                          <Star className='h-4 w-4 fill-amber-400 text-amber-400' />
+                          {app.rating}/5
+                        </span>
+                      ) : (
+                        <span className='text-xs text-muted-foreground'>-</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={app.status} />

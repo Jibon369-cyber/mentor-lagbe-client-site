@@ -3,9 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { GraduationCap, Menu, X } from "lucide-react";
+import {
+  Bookmark,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,7 +24,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Container from "@/components/Container";
-import { useAuth } from "../../context/AuthContext";
+import Logo from "@/components/Logo";
+import ThemeToggle from "@/components/ThemeToggle";
+import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/", label: "Home" },
@@ -25,6 +35,11 @@ const links = [
   { href: "/pricing", label: "Pricing" },
   { href: "/how-it-works", label: "How It Works" },
 ];
+
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export default function Navbar() {
   const { user, loading, logout } = useAuth();
@@ -40,102 +55,124 @@ export default function Navbar() {
   }
 
   return (
-    <header className='sticky top-0 z-50 border-b bg-background/95 backdrop-blur'>
-      <Container className='flex h-16 items-center justify-between'>
-        {/* Logo */}
-        <Link
-          href='/'
-          className='flex items-center gap-2 text-xl font-bold text-primary'>
-          <GraduationCap className='h-7 w-7' />
-          MentorLagbe
-        </Link>
+    <header className='sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl'>
+      <Container className='flex h-16 items-center justify-between gap-4'>
+        <Logo />
 
         {/* Desktop links */}
-        <nav className='hidden items-center gap-6 md:flex'>
+        <nav className='hidden items-center gap-1 md:flex'>
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === link.href
-                  ? "text-primary"
-                  : "text-muted-foreground"
-              }`}>
+              className={cn(
+                "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground",
+                isActive(pathname, link.href)
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground",
+              )}>
               {link.label}
             </Link>
           ))}
         </nav>
 
         {/* Desktop right side */}
-        <div className='hidden items-center gap-3 md:flex'>
-          {loading ? null : user ? (
+        <div className='hidden items-center gap-2 md:flex'>
+          <ThemeToggle />
+          {loading ? (
+            <div className='h-9 w-28 animate-pulse rounded-md bg-muted' />
+          ) : user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className='flex items-center gap-2 outline-none'>
-                <Avatar>
+              <DropdownMenuTrigger className='flex items-center gap-2 rounded-full border bg-card py-1 pl-1 pr-3 outline-none transition-colors hover:bg-muted'>
+                <Avatar className='h-8 w-8'>
                   <AvatarImage src={user.image} alt={user.name} />
                   <AvatarFallback>
                     {user.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className='text-sm font-medium'>{user.name}</span>
+                <span className='max-w-28 truncate text-sm font-medium'>
+                  {user.name}
+                </span>
                 <Badge variant='secondary' className='capitalize'>
                   {user.role}
                 </Badge>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-48'>
+              <DropdownMenuContent align='end' className='w-56'>
                 <DropdownMenuLabel className='truncate'>
                   {user.email}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href='/dashboard'>Dashboard</Link>
+                <DropdownMenuItem render={<Link href='/dashboard' />}>
+                  <LayoutDashboard className='mr-2 h-4 w-4' /> Dashboard
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href='/dashboard/profile'>Update Profile</Link>
+                <DropdownMenuItem
+                  render={<Link href='/dashboard/profile' />}>
+                  <UserIcon className='mr-2 h-4 w-4' /> Update Profile
                 </DropdownMenuItem>
+                {user.role === "student" && (
+                  <DropdownMenuItem
+                    render={
+                      <Link href='/dashboard/student/saved-tuitions' />
+                    }>
+                    <Bookmark className='mr-2 h-4 w-4' /> Saved Tuitions
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
-                  Sign Out
+                  <LogOut className='mr-2 h-4 w-4' /> Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <>
-              <Button variant='outline' asChild>
-                <Link href='/sign-in'>Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link href='/sign-up'>Sign Up</Link>
-              </Button>
+              <Link
+                href='/sign-in'
+                className={buttonVariants({ variant: "ghost" })}>
+                Sign In
+              </Link>
+              <Link href='/sign-up' className={buttonVariants()}>
+                Sign Up
+              </Link>
             </>
           )}
         </div>
 
-        {/* Mobile menu button */}
-        <Button
-          variant='ghost'
-          size='icon'
-          className='md:hidden'
-          onClick={() => setOpen(!open)}>
-          {open ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
-        </Button>
+        {/* Mobile buttons */}
+        <div className='flex items-center gap-1 md:hidden'>
+          <ThemeToggle />
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={() => setOpen(!open)}
+            aria-label='Toggle menu'
+            aria-expanded={open}>
+            {open ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
+          </Button>
+        </div>
       </Container>
 
       {/* Mobile menu */}
       {open && (
-        <div className='border-t md:hidden'>
+        <div className='border-t bg-background md:hidden'>
           <Container className='flex flex-col gap-1 py-3'>
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className='rounded-md px-3 py-2 text-sm font-medium hover:bg-muted'>
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm font-medium hover:bg-muted",
+                  isActive(pathname, link.href)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground",
+                )}>
                 {link.label}
               </Link>
             ))}
             <div className='my-2 border-t' />
-            {user ? (
+            {loading ? (
+              <div className='h-10 animate-pulse rounded-md bg-muted' />
+            ) : user ? (
               <>
                 <div className='flex items-center gap-2 px-3 py-2'>
                   <Avatar>
@@ -144,8 +181,13 @@ export default function Navbar() {
                       {user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className='text-sm font-medium'>{user.name}</span>
-                  <Badge variant='secondary' className='capitalize'>
+                  <div className='min-w-0'>
+                    <p className='truncate text-sm font-medium'>{user.name}</p>
+                    <p className='truncate text-xs text-muted-foreground'>
+                      {user.email}
+                    </p>
+                  </div>
+                  <Badge variant='secondary' className='ml-auto capitalize'>
                     {user.role}
                   </Badge>
                 </div>
@@ -161,22 +203,38 @@ export default function Navbar() {
                   className='rounded-md px-3 py-2 text-sm hover:bg-muted'>
                   Update Profile
                 </Link>
-                <Button variant='outline' onClick={handleLogout}>
+                {user.role === "student" && (
+                  <Link
+                    href='/dashboard/student/saved-tuitions'
+                    onClick={() => setOpen(false)}
+                    className='rounded-md px-3 py-2 text-sm hover:bg-muted'>
+                    Saved Tuitions
+                  </Link>
+                )}
+                <Button
+                  variant='outline'
+                  className='mt-1'
+                  onClick={handleLogout}>
                   Sign Out
                 </Button>
               </>
             ) : (
               <div className='flex gap-2'>
-                <Button variant='outline' asChild className='flex-1'>
-                  <Link href='/sign-in' onClick={() => setOpen(false)}>
-                    Sign In
-                  </Link>
-                </Button>
-                <Button asChild className='flex-1'>
-                  <Link href='/sign-up' onClick={() => setOpen(false)}>
-                    Sign Up
-                  </Link>
-                </Button>
+                <Link
+                  href='/sign-in'
+                  onClick={() => setOpen(false)}
+                  className={buttonVariants({
+                    variant: "outline",
+                    className: "flex-1",
+                  })}>
+                  Sign In
+                </Link>
+                <Link
+                  href='/sign-up'
+                  onClick={() => setOpen(false)}
+                  className={buttonVariants({ className: "flex-1" })}>
+                  Sign Up
+                </Link>
               </div>
             )}
           </Container>
