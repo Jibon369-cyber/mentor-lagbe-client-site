@@ -1,6 +1,4 @@
 
-
-
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -77,7 +75,7 @@ export default function SignInPage() {
         </form>
 
         <p className='text-center text-sm text-muted-foreground'>
-          Don't have an account?{" "}
+          Dont have an account?{" "}
           <Link
             href='/sign-up'
             className='font-semibold text-primary hover:underline'>
